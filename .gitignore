@@ -1,0 +1,1055 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyNT8yEiDSA6mTH5fco8/Riz",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/Rumas0/Thesis_work_SSL-imbalance/blob/main/.gitignore\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Verifying Data**"
+      ],
+      "metadata": {
+        "id": "CJEnzwrm32eh"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from google.colab import drive\n",
+        "drive.mount('/content/drive')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Fj9FPTDu5vJU",
+        "outputId": "160339b9-08d9-4115-b770-e0a918e924af"
+      },
+      "execution_count": 1,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Mounted at /content/drive\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import pandas as pd\n",
+        "df = pd.read_csv('/content/drive/MyDrive/Thesis-work/ISIC_2019_Training_GroundTruth.csv')"
+      ],
+      "metadata": {
+        "id": "iYJNa3qW4Bwv"
+      },
+      "execution_count": 2,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df\n",
+        "len(df)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "m9W-O8Xm6jt7",
+        "outputId": "1e3a82b0-f706-4470-89dd-db1eb24605d9"
+      },
+      "execution_count": 3,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "25331"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 3
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Checking Structure of the dataset**"
+      ],
+      "metadata": {
+        "id": "ry1NHAiI7oZC"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(\"Total Images:\", len(df))\n",
+        "print(\"\\nColumn names:\", df.columns.tolist())\n",
+        "print(\"\\nFirst 5 rowa:\")\n",
+        "print(df.head())"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "collapsed": true,
+        "id": "vLh4fEiG6uzi",
+        "outputId": "2fbbec56-5634-4ce3-fce5-2c991bdecd7a"
+      },
+      "execution_count": 4,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Total Images: 25331\n",
+            "\n",
+            "Column names: ['image', 'MEL', 'NV', 'BCC', 'AK', 'BKL', 'DF', 'VASC', 'SCC', 'UNK']\n",
+            "\n",
+            "First 5 rowa:\n",
+            "          image  MEL   NV  BCC   AK  BKL   DF  VASC  SCC  UNK\n",
+            "0  ISIC_0000000  0.0  1.0  0.0  0.0  0.0  0.0   0.0  0.0  0.0\n",
+            "1  ISIC_0000001  0.0  1.0  0.0  0.0  0.0  0.0   0.0  0.0  0.0\n",
+            "2  ISIC_0000002  1.0  0.0  0.0  0.0  0.0  0.0   0.0  0.0  0.0\n",
+            "3  ISIC_0000003  0.0  1.0  0.0  0.0  0.0  0.0   0.0  0.0  0.0\n",
+            "4  ISIC_0000004  1.0  0.0  0.0  0.0  0.0  0.0   0.0  0.0  0.0\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Class Distribution**"
+      ],
+      "metadata": {
+        "id": "EE4DtZRA71LK"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(\"\\n Class Distribution:\")\n",
+        "class_columns = [col for col in df.columns if col != 'image']\n",
+        "\n",
+        "print(f'Total image:{len(df)}')\n",
+        "print(f'Class columns found: {class_columns}\\n')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "collapsed": true,
+        "id": "xz_DBqlu76jq",
+        "outputId": "9f7ed5a0-e6af-41b2-87d9-7954147acc49"
+      },
+      "execution_count": 5,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            " Class Distribution:\n",
+            "Total image:25331\n",
+            "Class columns found: ['MEL', 'NV', 'BCC', 'AK', 'BKL', 'DF', 'VASC', 'SCC', 'UNK']\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "class_counts = df[class_columns].sum().sort_values(ascending=False)\n",
+        "\n",
+        "print(\"**Raw Counts**\")\n",
+        "print(class_counts)\n",
+        "print(f'\\n  Percentages of total Images')\n",
+        "percentages = (class_counts / len(df) * 100).round(2)\n",
+        "print(percentages)\n",
+        "\n",
+        "print('\\n Percentage Distribution ')\n",
+        "\n",
+        "for cls, count in class_counts.items():\n",
+        "    pct = (count / len(df) * 100)\n",
+        "    bar = \"\" *int(pct / 2)\n",
+        "    print(f\"{cls:10s}: {count:5.0f} ({pct:5.2f}%) {bar}\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "collapsed": true,
+        "id": "ZCNs0WzYH7-I",
+        "outputId": "eda3501e-70c8-46d7-ee9d-9f1e0912a020"
+      },
+      "execution_count": 6,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "**Raw Counts**\n",
+            "NV      12875.0\n",
+            "MEL      4522.0\n",
+            "BCC      3323.0\n",
+            "BKL      2624.0\n",
+            "AK        867.0\n",
+            "SCC       628.0\n",
+            "VASC      253.0\n",
+            "DF        239.0\n",
+            "UNK         0.0\n",
+            "dtype: float64\n",
+            "\n",
+            "  Percentages of total Images\n",
+            "NV      50.83\n",
+            "MEL     17.85\n",
+            "BCC     13.12\n",
+            "BKL     10.36\n",
+            "AK       3.42\n",
+            "SCC      2.48\n",
+            "VASC     1.00\n",
+            "DF       0.94\n",
+            "UNK      0.00\n",
+            "dtype: float64\n",
+            "\n",
+            " Percentage Distribution \n",
+            "NV        : 12875 (50.83%) \n",
+            "MEL       :  4522 (17.85%) \n",
+            "BCC       :  3323 (13.12%) \n",
+            "BKL       :  2624 (10.36%) \n",
+            "AK        :   867 ( 3.42%) \n",
+            "SCC       :   628 ( 2.48%) \n",
+            "VASC      :   253 ( 1.00%) \n",
+            "DF        :   239 ( 0.94%) \n",
+            "UNK       :     0 ( 0.00%) \n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Subset Creation**"
+      ],
+      "metadata": {
+        "id": "400ardKlNwta"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import numpy as np\n",
+        "from sklearn.model_selection import train_test_split\n",
+        "\n",
+        "np.random.seed(42)\n",
+        "class_columns = [col for col in df.columns if col not in ['image','UNK']]"
+      ],
+      "metadata": {
+        "id": "uDnaPjV2N4jZ"
+      },
+      "execution_count": 7,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df['label'] = df[class_columns].idxmax(axis=1)\n",
+        "\n",
+        "print ('Original Distribution')\n",
+        "print(df['label'].value_counts())\n",
+        "print(f'\\nTotal Images:{len(df)}')\n",
+        "\n",
+        "## Initial Distribution printed once more ##"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "collapsed": true,
+        "id": "yKHYnQr3OzUp",
+        "outputId": "16ff30e1-a19f-411b-9afd-6a45c11d7a8f"
+      },
+      "execution_count": 8,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Original Distribution\n",
+            "label\n",
+            "NV      12875\n",
+            "MEL      4522\n",
+            "BCC      3323\n",
+            "BKL      2624\n",
+            "AK        867\n",
+            "SCC       628\n",
+            "VASC      253\n",
+            "DF        239\n",
+            "Name: count, dtype: int64\n",
+            "\n",
+            "Total Images:25331\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Unlabeled Pool for SSL pre-training**"
+      ],
+      "metadata": {
+        "id": "ef79odfbRWq5"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "unlabeled_pool = df.sample(n=24000, random_state=42)\n",
+        "remaining_labeled_candidates = df.drop(unlabeled_pool.index)\n",
+        "\n",
+        "print(f'\\nUnlabeled Pool : {len(unlabeled_pool)} images')\n",
+        "print(f'Remaining images for labeled experiments:{len(remaining_labeled_candidates)} images')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "kSN5teb1RaMh",
+        "outputId": "18c3813d-cde3-4885-ce2d-2145445c88b9",
+        "collapsed": true
+      },
+      "execution_count": 9,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "Unlabeled Pool : 24000 images\n",
+            "Remaining images for labeled experiments:1331 images\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "unlabeled_pool[['image']].to_csv('unlabeled_pool_24k.csv', index=False)\n",
+        "print('Saved as: unlabeled_pool_24k.csv') ## unlabeled pool saved"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "5QBUIw-ASctZ",
+        "outputId": "98f4df6e-a534-4ca8-80c5-e564be5229ef",
+        "collapsed": true
+      },
+      "execution_count": 10,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Saved as: unlabeled_pool_24k.csv\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Creating Labeled Subsets with Controlled Imbalance**"
+      ],
+      "metadata": {
+        "id": "yapDsiv0T6sr"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def create_imbalanced_subset(data, targets, name):\n",
+        "    subset = []\n",
+        "    for cls, count in targets.items():\n",
+        "        cls_data = data[data['label'] == cls]\n",
+        "\n",
+        "        # Adjust count in csae lack of data\n",
+        "        if len(cls_data) < count:\n",
+        "            print(f'Warning: only {len(cls_data)} samples available for {cls}, requested {count}')\n",
+        "            count = len(cls_data)\n",
+        "\n",
+        "        # Sampling the data\n",
+        "        sampled = cls_data.sample(n=count, random_state=42)\n",
+        "        subset.append(sampled)\n",
+        "\n",
+        "    # Combining everything after loop\n",
+        "    result = pd.concat(subset).sample(frac=1, random_state=42).reset_index(drop=True)\n",
+        "\n",
+        "    print(f'\\n{name} Distribution:')\n",
+        "    print(result['label'].value_counts())\n",
+        "    print(f'Total: {len(result)}')\n",
+        "\n",
+        "    print(f'Imbalance ratio: 1:{result[\"label\"].value_counts().max() / result[\"label\"].value_counts().min():.1f}')\n",
+        "\n",
+        "    return result\n"
+      ],
+      "metadata": {
+        "id": "tIwIx5udzBSV"
+      },
+      "execution_count": 15,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Subset Generation: Creating 3 Distinct Experimental Scenarios**"
+      ],
+      "metadata": {
+        "id": "BuejVgiD54KZ"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "##  Scenario A: Full Thesis Baseline (800 samples, 1:5:10 ratio)\n",
+        "\n",
+        "exp_a = create_imbalanced_subset(remaining_labeled_candidates, targets={'MEL': 50, 'BKL': 250, 'NV': 500}, name=\"Experiment A (800 images, 1:5:10)\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "collapsed": true,
+        "id": "lezW_EhG6HZu",
+        "outputId": "d63448df-bde1-4fbf-9844-dbf99fb22633"
+      },
+      "execution_count": 16,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Warning: only 141 samples available for BKL, requested 250\n",
+            "\n",
+            "Experiment A (800 images, 1:5:10) Distribution:\n",
+            "label\n",
+            "NV     500\n",
+            "BKL    141\n",
+            "MEL     50\n",
+            "Name: count, dtype: int64\n",
+            "Total: 691\n",
+            "Imbalance ratio: 1:10.0\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "## Scenario B: High Imbalance Ablation (500 samples, 1:10 ratio)\n",
+        "\n",
+        "exp_b = create_imbalanced_subset(remaining_labeled_candidates, targets={'MEL': 45, 'NV': 455}, name=\"experiment B (500 images, 1:10)\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "collapsed": true,
+        "id": "qR0jvvv761uo",
+        "outputId": "28dd8fea-7554-4f9d-a4f2-251735688047"
+      },
+      "execution_count": 17,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "experiment B (500 images, 1:10) Distribution:\n",
+            "label\n",
+            "NV     455\n",
+            "MEL     45\n",
+            "Name: count, dtype: int64\n",
+            "Total: 500\n",
+            "Imbalance ratio: 1:10.1\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "## Scenario C: Low Resource (100 images, 1:9 ratio)\n",
+        "\n",
+        "exp_c = create_imbalanced_subset(remaining_labeled_candidates, targets={'MEL': 10, 'NV': 90}, name=\"Experiment C (100 images, 1:9)\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "collapsed": true,
+        "id": "IkQe5V9f8gFt",
+        "outputId": "cb16858e-2e64-4de8-8732-4bff508dc167"
+      },
+      "execution_count": 18,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "Experiment C (100 images, 1:9) Distribution:\n",
+            "label\n",
+            "NV     90\n",
+            "MEL    10\n",
+            "Name: count, dtype: int64\n",
+            "Total: 100\n",
+            "Imbalance ratio: 1:9.0\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Splitting Data into Train/Val/Test (70/15/15) Essentially Stratified Split**"
+      ],
+      "metadata": {
+        "id": "8p7mw7eS9mXP"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "## First >> train(70%) vs temp(30%)\n",
+        "def stratified_split(data, name):\n",
+        "  train, temp = train_test_split(\n",
+        "      data,\n",
+        "      test_size=0.30,\n",
+        "      random_state=42,\n",
+        "      stratify=data['label']\n",
+        "  )\n",
+        "\n",
+        "## Second >> val (15%) VS test (15%)\n",
+        "  val, test = train_test_split(\n",
+        "      temp,\n",
+        "      test_size=0.50,\n",
+        "      random_state=42,\n",
+        "      stratify=temp['label']\n",
+        "  )\n",
+        "\n",
+        "  print(f'\\n{name} Splits:')\n",
+        "  print(f\"Train: {len(train)} ({train['label'].value_counts().to_dict()})\")\n",
+        "  print(f\"Val: {len(val)} ({val['label'].value_counts().to_dict()})\")\n",
+        "  print(f\"Test: {len(test)} ({test['label'].value_counts().to_dict()})\")\n",
+        "\n",
+        "  return train, val, test\n",
+        "\n",
+        "  ## Splitting all experiments\n",
+        "train_a, val_a, test_a = stratified_split(exp_a, \"Experiment A\")\n",
+        "train_b, val_b, test_b = stratified_split(exp_b, \"Experiment B\")\n",
+        "train_c, val_c, test_c = stratified_split(exp_c, \"Experiment C\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "y3ffJBPs-WwF",
+        "outputId": "ba44916f-3989-4d6d-998a-806844728113"
+      },
+      "execution_count": 26,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "Experiment A Splits:\n",
+            "Train: 483 ({'NV': 349, 'BKL': 99, 'MEL': 35})\n",
+            "Val: 104 ({'NV': 76, 'BKL': 21, 'MEL': 7})\n",
+            "Test: 104 ({'NV': 75, 'BKL': 21, 'MEL': 8})\n",
+            "\n",
+            "Experiment B Splits:\n",
+            "Train: 350 ({'NV': 319, 'MEL': 31})\n",
+            "Val: 75 ({'NV': 68, 'MEL': 7})\n",
+            "Test: 75 ({'NV': 68, 'MEL': 7})\n",
+            "\n",
+            "Experiment C Splits:\n",
+            "Train: 70 ({'NV': 63, 'MEL': 7})\n",
+            "Val: 15 ({'NV': 14, 'MEL': 1})\n",
+            "Test: 15 ({'NV': 13, 'MEL': 2})\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Saving All CSVs**"
+      ],
+      "metadata": {
+        "id": "gcGCQT2lHyT1"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "## Exp A (Main Thesis)\n",
+        "train_a.to_csv('expA_train.csv', index=False)\n",
+        "val_a.to_csv('expA_val.csv', index=False)\n",
+        "test_a.to_csv('expA_test.csv', index=False)\n",
+        "\n",
+        "## Exp B (500 samples)\n",
+        "train_b.to_csv('expB_train.csv', index=False)\n",
+        "val_b.to_csv('expB_val.csv', index=False)\n",
+        "test_b.to_csv('expB_test.csv', index=False)\n",
+        "\n",
+        "## Exp C (100 samples)\n",
+        "train_c.to_csv('expC_train.csv', index=False)\n",
+        "val_c.to_csv('expC_val.csv', index=False)\n",
+        "test_c.to_csv('expC_test.csv', index=False)\n",
+        "\n",
+        "print(\"\\n\" + \"=\"*36)\n",
+        "print(\"**All Datasets Created Succesfully**\")\n",
+        "print(\"=\"*36)\n",
+        "print(\"\\nFiles Generated:\")\n",
+        "print(\"- unlabeled_pool_24k.csv (24,000 images for SSL)\")\n",
+        "print(\"- expA_train/val/test.csv (800 labeled images, 1:5:10 ratio)\")\n",
+        "print(\"- expB_train/val/test.csv (500 labeled images, 1:10 ratio)\")\n",
+        "print(\"- expC_train/val/test.csv (100 labeled images, 1:9 ratio)\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "collapsed": true,
+        "id": "rydqfI_3H1oA",
+        "outputId": "008b343b-168e-4bcd-8193-f274f47e9a2a"
+      },
+      "execution_count": 29,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "====================================\n",
+            "**All Datasets Created Succesfully**\n",
+            "====================================\n",
+            "\n",
+            "Files Generated:\n",
+            "- unlabeled_pool_24k.csv (24,000 images for SSL)\n",
+            "- expA_train/val/test.csv (800 labeled images, 1:5:10 ratio)\n",
+            "- expB_train/val/test.csv (500 labeled images, 1:10 ratio)\n",
+            "- expC_train/val/test.csv (100 labeled images, 1:9 ratio)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Summary**"
+      ],
+      "metadata": {
+        "id": "iENx4Xc9M3Fx"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "summary = f\"\"\"\n",
+        "DATASET CONFIGURATION SUMMARY\n",
+        ">>>>>>>\n",
+        "\n",
+        "Date: 03-04-2026\n",
+        "Dataset: ISIC 2019 (subset)\n",
+        "Strategy: Small labeled data + Abundant unlabeled data\n",
+        "\n",
+        "UNLABELED POOL (SSL Pre-training)\n",
+        "- Images: 24,000\n",
+        "- Labels: Hidden (not used during pre-training)\n",
+        "- Purpose: Learn general dermoscopic features\n",
+        "\n",
+        "LABELED EXPERIMENTS\n",
+        "\n",
+        "Experiment A (Main):\n",
+        "- Total: 800 images (560 train / 120 val / 120 test)\n",
+        "- Classes: MEL (50), BKL (250), NV (500)\n",
+        "- Imbalance: 1:5:10 ratio\n",
+        "- Clinical scenario: Moderate imbalance, multi-class\n",
+        "\n",
+        "Experiment B (High-Imbalance):\n",
+        "- Total: 500 images (350 train / 75 val / 75 test)\n",
+        "- Classes: MEL (45), NV (455)\n",
+        "- Imbalance: 1:10 ratio\n",
+        "- Clinical scenario: Binary malignant vs benign, severe imbalance\n",
+        "\n",
+        "Experiment C (Low-Resource):\n",
+        "- Total: 100 images (70 train / 15 val / 15 test)\n",
+        "- Classes: MEL (10), NV (90)\n",
+        "- Imbalance: 1:9 ratio\n",
+        "- Clinical scenario: Extreme data scarcity\n",
+        "\n",
+        "REPRODUCIBILITY\n",
+        "- Random seed: 42\n",
+        "- Stratified splits: Yes (maintains class ratios)\n",
+        "- Selection: Random sampling from remaining pool after unlabeled split\n",
+        "\"\"\"\n",
+        "\n",
+        "with open('dataset_config_summary.txt', 'w') as f:\n",
+        "    f.write(summary)\n",
+        "\n",
+        "print(summary)\n",
+        "print(\"\\nSaved to: dataset_config_summary.txt\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "collapsed": true,
+        "id": "0PC2szsPM6jS",
+        "outputId": "f714e97b-ca7d-4c07-f438-ebf2545ac864"
+      },
+      "execution_count": 30,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "DATASET CONFIGURATION SUMMARY\n",
+            "==============================\n",
+            "\n",
+            "Date: 03-04-2026\n",
+            "Dataset: ISIC 2019 (subset)\n",
+            "Strategy: Small labeled data + Abundant unlabeled data\n",
+            "\n",
+            "UNLABELED POOL (SSL Pre-training)\n",
+            "- Images: 24,000\n",
+            "- Labels: Hidden (not used during pre-training)\n",
+            "- Purpose: Learn general dermoscopic features\n",
+            "\n",
+            "LABELED EXPERIMENTS\n",
+            "\n",
+            "Experiment A (Primary):\n",
+            "- Total: 800 images (560 train / 120 val / 120 test)\n",
+            "- Classes: MEL (50), BKL (250), NV (500)\n",
+            "- Imbalance: 1:5:10 ratio\n",
+            "- Clinical scenario: Moderate imbalance, multi-class\n",
+            "\n",
+            "Experiment B (Ablation):\n",
+            "- Total: 500 images (350 train / 75 val / 75 test)  \n",
+            "- Classes: MEL (45), NV (455)\n",
+            "- Imbalance: 1:10 ratio\n",
+            "- Clinical scenario: Binary malignant vs benign, severe imbalance\n",
+            "\n",
+            "Experiment C (Ablation):\n",
+            "- Total: 100 images (70 train / 15 val / 15 test)\n",
+            "- Classes: MEL (10), NV (90)  \n",
+            "- Imbalance: 1:9 ratio\n",
+            "- Clinical scenario: Extreme data scarcity\n",
+            "\n",
+            "REPRODUCIBILITY\n",
+            "- Random seed: 42\n",
+            "- Stratified splits: Yes (maintains class ratios)\n",
+            "- Selection: Random sampling from remaining pool after unlabeled split\n",
+            "\n",
+            "\n",
+            "Saved to: dataset_config_summary.txt\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Verifying Files**"
+      ],
+      "metadata": {
+        "id": "dymDnO8FPbN8"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import os\n",
+        "import pandas as pd\n",
+        "\n",
+        "print(\"=== FILE VERIFICATION ===\\n\")\n",
+        "\n",
+        "# Check CSVs\n",
+        "csvs = ['expA_train.csv', 'expA_val.csv', 'expA_test.csv', 'unlabeled_pool_24k.csv']\n",
+        "for csv in csvs:\n",
+        "    if os.path.exists(csv):\n",
+        "        df = pd.read_csv(csv)\n",
+        "        print(f\"✓ {csv}: {len(df)} rows\")\n",
+        "    else:\n",
+        "        print(f\"✗ {csv}: MISSING\")\n",
+        "\n",
+        "print(\"\\n=== CONFIGURATION ===\")\n",
+        "if os.path.exists('dataset_config_summary.txt'):\n",
+        "    with open('dataset_config_summary.txt', 'r') as f:\n",
+        "        print(f.read())"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "collapsed": true,
+        "id": "p4yDbwwJOboJ",
+        "outputId": "56f7d29c-3742-446b-fe1f-5433dba3edcf"
+      },
+      "execution_count": 31,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "=== FILE VERIFICATION ===\n",
+            "\n",
+            "✓ expA_train.csv: 483 rows\n",
+            "✓ expA_val.csv: 104 rows\n",
+            "✓ expA_test.csv: 104 rows\n",
+            "✓ unlabeled_pool_24k.csv: 24000 rows\n",
+            "\n",
+            "=== CONFIGURATION ===\n",
+            "\n",
+            "DATASET CONFIGURATION SUMMARY\n",
+            "==============================\n",
+            "\n",
+            "Date: 03-04-2026\n",
+            "Dataset: ISIC 2019 (subset)\n",
+            "Strategy: Small labeled data + Abundant unlabeled data\n",
+            "\n",
+            "UNLABELED POOL (SSL Pre-training)\n",
+            "- Images: 24,000\n",
+            "- Labels: Hidden (not used during pre-training)\n",
+            "- Purpose: Learn general dermoscopic features\n",
+            "\n",
+            "LABELED EXPERIMENTS\n",
+            "\n",
+            "Experiment A (Primary):\n",
+            "- Total: 800 images (560 train / 120 val / 120 test)\n",
+            "- Classes: MEL (50), BKL (250), NV (500)\n",
+            "- Imbalance: 1:5:10 ratio\n",
+            "- Clinical scenario: Moderate imbalance, multi-class\n",
+            "\n",
+            "Experiment B (Ablation):\n",
+            "- Total: 500 images (350 train / 75 val / 75 test)  \n",
+            "- Classes: MEL (45), NV (455)\n",
+            "- Imbalance: 1:10 ratio\n",
+            "- Clinical scenario: Binary malignant vs benign, severe imbalance\n",
+            "\n",
+            "Experiment C (Ablation):\n",
+            "- Total: 100 images (70 train / 15 val / 15 test)\n",
+            "- Classes: MEL (10), NV (90)  \n",
+            "- Imbalance: 1:9 ratio\n",
+            "- Clinical scenario: Extreme data scarcity\n",
+            "\n",
+            "REPRODUCIBILITY\n",
+            "- Random seed: 42\n",
+            "- Stratified splits: Yes (maintains class ratios)\n",
+            "- Selection: Random sampling from remaining pool after unlabeled split\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Saving Fles to Google Drive**"
+      ],
+      "metadata": {
+        "id": "cYH_zHtzPu4A"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from google.colab import drive\n",
+        "import shutil\n",
+        "import os\n",
+        "\n",
+        "# Mount drive\n",
+        "drive.mount('/content/drive')\n",
+        "\n",
+        "# Create thesis backup folder\n",
+        "backup_dir = '/content/drive/MyDrive/Thesis-work/CSVs'\n",
+        "os.makedirs(backup_dir, exist_ok=True)\n",
+        "\n",
+        "# List all files to backup\n",
+        "files_to_backup = [\n",
+        "    'ISIC_2019_Training_GroundTruth.csv',  # Original metadata\n",
+        "    'unlabeled_pool_24k.csv',\n",
+        "    'expA_train.csv', 'expA_val.csv', 'expA_test.csv',\n",
+        "    'expB_train.csv', 'expB_val.csv', 'expB_test.csv',\n",
+        "    'expC_train.csv', 'expC_val.csv', 'expC_test.csv',\n",
+        "    'dataset_config_summary.txt',\n",
+        "    'download_labeled.txt',\n",
+        "    'download_unlabeled.txt'\n",
+        "]\n",
+        "\n",
+        "# Copy files\n",
+        "for file in files_to_backup:\n",
+        "    if os.path.exists(file):\n",
+        "        shutil.copy(file, backup_dir)\n",
+        "        print(f\"✓ Backed up: {file}\")\n",
+        "    else:\n",
+        "        print(f\"✗ Missing: {file}\")\n",
+        "\n",
+        "print(f\"\\nAll files backed up to: {backup_dir}\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "collapsed": true,
+        "id": "O1yEHRaqP0cJ",
+        "outputId": "e99d15fd-e4e0-4019-b305-16b2649989e8"
+      },
+      "execution_count": 33,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Drive already mounted at /content/drive; to attempt to forcibly remount, call drive.mount(\"/content/drive\", force_remount=True).\n",
+            "✗ Missing: ISIC_2019_Training_GroundTruth.csv\n",
+            "✓ Backed up: unlabeled_pool_24k.csv\n",
+            "✓ Backed up: expA_train.csv\n",
+            "✓ Backed up: expA_val.csv\n",
+            "✓ Backed up: expA_test.csv\n",
+            "✓ Backed up: expB_train.csv\n",
+            "✓ Backed up: expB_val.csv\n",
+            "✓ Backed up: expB_test.csv\n",
+            "✓ Backed up: expC_train.csv\n",
+            "✓ Backed up: expC_val.csv\n",
+            "✓ Backed up: expC_test.csv\n",
+            "✓ Backed up: dataset_config_summary.txt\n",
+            "✗ Missing: download_labeled.txt\n",
+            "✗ Missing: download_unlabeled.txt\n",
+            "\n",
+            "All files backed up to: /content/drive/MyDrive/Thesis-work/CSVs\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**GITHUB**"
+      ],
+      "metadata": {
+        "id": "zyd0mywWXo-L"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Create .gitignore content\n",
+        "gitignore_content = \"\"\"\n",
+        "# Ignore images (too large)\n",
+        "*.jpg\n",
+        "*.jpeg\n",
+        "*.png\n",
+        "*.tif\n",
+        "*.zip\n",
+        "\n",
+        "# Ignore data folders\n",
+        "data/isic2019/\n",
+        "data/labeled/\n",
+        "data/unlabeled/\n",
+        "\n",
+        "# Ignore Python cache\n",
+        "__pycache__/\n",
+        "*.pyc\n",
+        ".ipynb_checkpoints/\n",
+        "\n",
+        "# Ignore model checkpoints (large)\n",
+        "*.pth\n",
+        "*.ckpt\n",
+        "*.h5\n",
+        "\"\"\"\n",
+        "\n",
+        "# Save to file\n",
+        "with open('.gitignore', 'w') as f:\n",
+        "    f.write(gitignore_content)\n",
+        "\n",
+        "print(\"Created .gitignore\")\n",
+        "print(gitignore_content)"
+      ],
+      "metadata": {
+        "collapsed": true,
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "e6cw5RZPXsKQ",
+        "outputId": "4accf5ac-9a46-426b-be93-65fb1687a3f7"
+      },
+      "execution_count": 34,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Created .gitignore\n",
+            "\n",
+            "# Ignore images (too large)\n",
+            "*.jpg\n",
+            "*.jpeg\n",
+            "*.png\n",
+            "*.tif\n",
+            "*.zip\n",
+            "\n",
+            "# Ignore data folders\n",
+            "data/isic2019/\n",
+            "data/labeled/\n",
+            "data/unlabeled/\n",
+            "\n",
+            "# Ignore Python cache\n",
+            "__pycache__/\n",
+            "*.pyc\n",
+            ".ipynb_checkpoints/\n",
+            "\n",
+            "# Ignore model checkpoints (large)\n",
+            "*.pth\n",
+            "*.ckpt\n",
+            "*.h5\n",
+            "\n"
+          ]
+        }
+      ]
+    }
+  ]
+}
